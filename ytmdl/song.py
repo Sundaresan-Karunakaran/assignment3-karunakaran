@@ -390,7 +390,7 @@ def _get_option(SONG_INFO, is_quiet, choice):
     return int(option)
 
 
-def setData(SONG_INFO, is_quiet, song_path, datatype='mp3', choice=None, skip_showing_choice: bool = False):
+def setData(SONG_INFO, is_quiet, song_path, file_format='mp3', choice=None, skip_showing_choice: bool = False):
     """Add the metadata to the song."""
 
     # Some providers need extra daa from other endpoints,
@@ -420,17 +420,17 @@ def setData(SONG_INFO, is_quiet, song_path, datatype='mp3', choice=None, skip_sh
     if hasattr(song, 'provider') and song.provider in get_more_data_dict:
         song = get_more_data_dict.get(song.provider, lambda _: None)(song)
 
-    if datatype == 'mp3':
+    if file_format == 'mp3':
         img_added = set_MP3_data(
             song,
             song_path,
         )
-    elif datatype == 'm4a':
+    elif file_format == 'm4a':
         img_added = set_M4A_data(
             song,
             song_path,
         )
-    elif datatype == 'opus':
+    elif file_format == 'opus':
         img_added = set_OPUS_data(
             song,
             song_path

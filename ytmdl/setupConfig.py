@@ -351,7 +351,7 @@ def retDefault(keyword):
         return DEFAULTS().SPOTIFY_COUNTRY_DEFAULT
 
 
-def GIVE_DEFAULT(self, keyword):
+def get_config_value(self, keyword):
     """Check if the user has uncommented the config and added something.
 
     If possible get what is changed, else return the default value.

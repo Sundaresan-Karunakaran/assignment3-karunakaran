@@ -1,99 +1,43 @@
-"""Store all the exceptions related to ytmdl that might
-arise during the runtime of the app
-"""
-
-
-class DownloadError(Exception):
-    """Exception for download error.
-
-    This exception is solely for those cases when
-    the download fails for some reason.
-    """
-    def __init__(self, link, error) -> None:
-        super().__init__()
-
-        self.__message = self.__build_message(link, error)
-
-    def __build_message(self, link, error) -> str:
-        """Build the error message."""
-        return "Download failed for `{}` with error: {}".format(
-            link, error
-        )
+class YtmdlError(Exception):
+    """Base class for all ytmdl related exceptions."""
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self.message = message
 
     def __str__(self) -> str:
-        return self.__message
+        return self.message
 
 
-class ConvertError(Exception):
-    """Exception for conversion erros.
-
-    This exception is raised whenever the conversion goes wrong,
-    mostly while using ffmpeg or something similar.
-    """
-    def __init__(self, error) -> None:
-        super().__init__()
-
-        self.__message = self.__build_message(error)
-
-    def __build_message(self, error) -> str:
-        """Build the error message"""
-        return "Conversion failed with error: {}".format(error)
-
-    def __str__(self) -> str:
-        return self.__message
+class DownloadError(YtmdlError):
+    """Exception for download error."""
+    def __init__(self, link: str, error: str) -> None:
+        message = f"Download failed for `{link}` with error: {error}"
+        super().__init__(message)
 
 
-class NoMetaError(Exception):
-    """Exception to be raised when no metadata is found."""
-    def __init__(self, song) -> None:
-        super().__init__()
-
-        self.__message = self.__build_message(song)
-
-    def __build_message(self, song) -> str:
-        """Build the error message"""
-        return "No metadata found for `{}`".format(song)
-
-    def __str__(self) -> str:
-        return self.__message
+class ConvertError(YtmdlError):
+    """Exception for conversion errors."""
+    def __init__(self, error: str) -> None:
+        message = f"Conversion failed with error: {error}"
+        super().__init__(message)
 
 
-class MetadataError(Exception):
-    """Exception for metadata related errors while setting metadata
-
-    This is only to be raised when something goes wrong while setting
-    the metadata for the song.
-    """
-    def __init__(self, song) -> None:
-        super().__init__()
-
-        self.__message = self.__build_message(song)
-
-    def __build_message(self, song) -> str:
-        """Build the error message"""
-        return "Something went wrong while setting metadata for `{}`".format(
-            song
-        )
-
-    def __str__(self) -> str:
-        return self.__message
+class NoMetaError(YtmdlError):
+    """Exception for no metadata found."""
+    def __init__(self, song: str) -> None:
+        message = f"No metadata found for `{song}`"
+        super().__init__(message)
 
 
-class ExtractError(Exception):
-    """
-    Exception for errors that arise while extracting any detail
-    related to the song.
+class MetadataError(YtmdlError):
+    """Exception for errors while setting metadata."""
+    def __init__(self, song: str) -> None:
+        message = f"Something went wrong while setting metadata for `{song}`"
+        super().__init__(message)
 
-    This is only to be raise when some extraction related error
-    occurs.
-    """
-    def __init__(self, song) -> None:
-        super().__init__()
 
-        self.__message = self.__build_message(song)
-
-    def __build_message(self, song) -> str:
-        return "Couldn't extract data for: {}".format(song)
-
-    def __str__(self) -> str:
-        return self.__message
+class ExtractError(YtmdlError):
+    """Exception for extraction-related errors."""
+    def __init__(self, song: str) -> None:
+        message = f"Couldn't extract data for: {song}"
+        super().__init__(message)

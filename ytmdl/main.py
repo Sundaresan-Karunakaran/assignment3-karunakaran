@@ -27,10 +27,7 @@ from ytmdl import (
     cache,
     utility,
 )
-from ytmdl.exceptions import (
-    DownloadError, ConvertError, NoMetaError, MetadataError,
-    ExtractError
-)
+from ytmdl.exceptions import ( NoMetaError, YtmdlError )
 from ytmdl.core import (
     search, download, convert, trim, meta
 )
@@ -288,12 +285,12 @@ def main(args):
     # TODO: Change the way ignore-errors is used in order to handle playlists
     try:
         path = download(link, yt_title, args)
-    except DownloadError as dw_error:
+    except YtmdlError as ytmdl_error:
         if args.ignore_errors:
             logger.info("--ignore-errors passed. Skipping this song!")
             return
 
-        logger.critical("ERROR: {}".format(dw_error),
+        logger.critical("ERROR: {}".format(ytmdl_error),
                         ". Pass `--ignore-errors` to ignore this.")
         return
 
@@ -379,20 +376,17 @@ def post_processing(
     stream,
     is_download_archive: bool
 ) -> None:
-    """Handle all the activities post search of the song.
-
-    This function will handle the following:
-    Convert, Trim, Metadata, Cleaning up.
-    """
+    """Handle all the activities post search of the song."""
     logger.debug("song_name: ", song_name, " song_meta: ", song_metadata)
     logger.debug(stream)
-    # Try to convert the song
+
     try:
+        # Try to convert the song
         conv_name = convert(path, passed_format, start_time,
                             end_time, args.dont_transcode)
-    except ConvertError as convert_error:
-        logger.critical('ERROR: {}'.format(convert_error))
-        return
+    except YtmdlError as ytmdl_error:  # Catch all ytmdl-related errors
+        logger.critical(str(ytmdl_error))
+        return  # Return after logging
 
     # Trim the song
     trim(conv_name, args)
@@ -409,33 +403,24 @@ def post_processing(
             logger.info("Done")
             return
 
-    # Else fill the meta by searching
     try:
         track_selected = meta(conv_name, song_name, song_metadata, link, args)
-    except NoMetaError as no_meta_error:
-        if args.on_meta_error == 'skip':
-            # Write to the archive file
-            add_song_to_archive(
-                stream=stream, youtube_link=link) if is_download_archive else None
-
-        if dir.dry_cleanup(conv_name, song_name, args.filename):
-            logger.info("Done")
+    except YtmdlError as ytmdl_error:  # Catch all ytmdl-related errors
+        if isinstance(ytmdl_error, NoMetaError):
+            if args.on_meta_error == 'skip':
+                # Write to the archive file
+                add_song_to_archive(
+                    stream=stream, youtube_link=link) if is_download_archive else None
+            if dir.dry_cleanup(conv_name, song_name, args.filename):
+                logger.info("Done")
         elif not args.ignore_errors or args.on_meta_error == 'exit':
-            logger.critical(
-                str(no_meta_error), ". Pass `--ignore-errors` or `on-meta-error` to ignore this.")
-        return
-    except MetadataError as metadata_error:
-        if not args.ignore_errors:
-            logger.critical(str(
-                metadata_error), ". Pass `--ignore-errors` or `on-meta-error` to ignore this.")
+            logger.critical(str(ytmdl_error), ". Pass `--ignore-errors` or `on-meta-error` to ignore this.")
         return
 
     # Write to the archive file
     add_song_to_archive(
         stream=stream, youtube_link=link) if is_download_archive else None
 
-    # If no metadata was selected, just do a dry cleanup and skip the
-    # song
     if track_selected is None:
         if dir.dry_cleanup(conv_name, song_name, args.filename):
             logger.info("Done")
@@ -528,9 +513,9 @@ def extract_song_name(args) -> Tuple[str, bool]:
     try:
         # Fetch the title of the song
         song_name, verify_title = yt.get_title(args.url, args.ytdl_config)
-    except ExtractError:
+    except YtmdlError as ytmdl_error:
         if not args.ignore_errors:
-            logger.critical("Wasn't able to extract song data.",
+            logger.critical(str(ytmdl_error), "Wasn't able to extract song data.",
                             "Use `--ignore-errors` to ignore this error")
         return None, False
 

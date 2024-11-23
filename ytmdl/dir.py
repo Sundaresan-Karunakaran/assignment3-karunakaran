@@ -32,12 +32,12 @@ def get_abs_path(path_passed: str) -> str:
     return path_passed.split("$")[0]
 
 
-def cleanup(TRACK_INFO, index, datatype, remove_cached=True, filename_passed=None):
+def cleanup(TRACK_INFO, index, file_format, remove_cached=True, filename_passed=None):
     """Move the song from temp to the song dir."""
     try:
         SONG = glob.glob(os.path.join(
             defaults.DEFAULT.SONG_TEMP_DIR,
-            '*{}'.format(datatype)
+            '*{}'.format(file_format)
         ))
         SONG = SONG[0]
 
@@ -49,7 +49,7 @@ def cleanup(TRACK_INFO, index, datatype, remove_cached=True, filename_passed=Non
         # special characters like `$` though the config then that will
         # overwrite the filename_passed.
         if filename_passed is not None:
-            SONG_NAME = filename_passed + ".{}".format(datatype)
+            SONG_NAME = filename_passed + ".{}".format(file_format)
 
         DIR = defaults.DEFAULT.SONG_DIR
         logger.debug("directory being used: ", DIR)
@@ -72,7 +72,7 @@ def cleanup(TRACK_INFO, index, datatype, remove_cached=True, filename_passed=Non
         shutil.move(SONG, dest_filename)
 
         if remove_cached:
-            _delete_cached_songs(datatype)
+            _delete_cached_songs(file_format)
 
         logger.info('Moved to {}...'.format(DIR))
         return True

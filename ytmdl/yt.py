@@ -80,7 +80,7 @@ def dw_using_yt(
     link,
     proxy,
     song_name,
-    datatype,
+    file_format,
     no_progress=False,
     ytdl_config: str = None,
     dont_convert: bool = False,
@@ -93,9 +93,9 @@ def dw_using_yt(
 
     The function will be called by using hooks.
     """
-    if datatype == 'mp3' or datatype == 'opus':
+    if file_format == 'mp3' or file_format == 'opus':
         format_ = 'bestaudio/best'
-    elif datatype == 'm4a':
+    elif file_format == 'm4a':
         format_ = 'bestaudio[ext=m4a]'
 
     extra_opts = {
@@ -111,7 +111,7 @@ def dw_using_yt(
     #
     # Replace `.opus` with `.webm` from the file since otherwise
     # yt-dlp thinks that the file is converted.
-    if datatype == "opus" and dont_convert:
+    if file_format == "opus" and dont_convert:
         extra_opts["postprocessors"] = [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': "best",
@@ -153,7 +153,7 @@ def dw(
         value,
         proxy=None,
         song_name='ytmdl_temp.mp3',
-        datatype='mp3',
+        file_format='mp3',
         no_progress=False,
         ytdl_config: str = None,
         dont_convert: bool = False,
@@ -170,10 +170,10 @@ def dw(
     added.
     """
     # If song_name doesn't have mp3 extension, add it
-    if (datatype == "mp3" or datatype == "opus") and not song_name.endswith(datatype):
-        song_name += '.' + datatype
-    elif datatype == "m4a" and not song_name.endswith(datatype):
-        song_name += '.' + datatype
+    if (file_format == "mp3" or file_format == "opus") and not song_name.endswith(file_format):
+        song_name += '.' + file_format
+    elif file_format == "m4a" and not song_name.endswith(file_format):
+        song_name += '.' + file_format
 
     try:
         # Replace the spaces with hashes
@@ -191,7 +191,7 @@ def dw(
         logger.debug(name)
 
         # Start downloading the song
-        status = dw_using_yt(value, proxy, name, datatype,
+        status = dw_using_yt(value, proxy, name, file_format,
                              no_progress, ytdl_config, dont_convert,
                              cookiefile, creds)
 

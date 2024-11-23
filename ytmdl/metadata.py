@@ -1,5 +1,6 @@
 """Define functions related to getting tags."""
 
+from functools import wraps
 import itunespy
 import re
 from ytmdl.stringutils import (
@@ -16,6 +17,24 @@ from unidecode import unidecode
 
 logger = Logger('metadata')
 
+def provider_error_handler(provider_name):
+    """Decorator to handle errors for metadata providers."""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                logger.debug(f"Trying {provider_name} with args: {args}")
+                return func(*args, **kwargs)
+            except Exception as e:
+                logger.debug(f"Error in {provider_name}: {e}")
+                logger.error(
+                    f"Something went wrong with {provider_name}. "
+                    f"Check '{logger.get_log_file()}' for details."
+                )
+                return None
+        return wrapper
+    return decorator
+
 
 def _logger_provider_error(exception, name):
     """Show error if providers throw an error"""
@@ -26,81 +45,50 @@ def _logger_provider_error(exception, name):
             ".format(name, logger.get_log_file()))
 
 
+@provider_error_handler("iTunes")
 def get_from_itunes(SONG_NAME):
-    """Try to download the metadata using itunespy."""
-    # Try to get the song data from itunes
-    try:
-        # Get the country from the config
-        country = defaults.DEFAULT.ITUNES_COUNTRY
-        SONG_INFO = itunespy.search_track(SONG_NAME, country=country)
-        return SONG_INFO
-    except Exception as e:
-        _logger_provider_error(e, 'iTunes')
-        return None
+    """Fetch metadata from iTunes."""
+    country = defaults.DEFAULT.ITUNES_COUNTRY
+    return itunespy.search_track(SONG_NAME, country=country)
 
 
+@provider_error_handler("Gaana")
 def get_from_gaana(SONG_NAME):
-    """Get some tags from gaana."""
-    try:
-        nana = gaana.searchSong(SONG_NAME)
-        return nana
-    except Exception as e:
-        _logger_provider_error(e, 'Gaana')
-        return None
+    """Fetch metadata from Gaana."""
+    return gaana.searchSong(SONG_NAME)
 
 
+@provider_error_handler("Deezer")
 def get_from_deezer(SONG_NAME):
-    """Get some tags from deezer."""
-    try:
-        songs = deezer.searchSong(SONG_NAME)
-        return songs
-    except Exception as e:
-        _logger_provider_error(e, 'Deezer')
+    """Fetch metadata from Deezer."""
+    return deezer.searchSong(SONG_NAME)
 
 
+@provider_error_handler("LastFM")
 def get_from_lastfm(SONG_NAME):
-    """Get metadata from Last FM"""
-    try:
-        songs = lastfm.searchSong(SONG_NAME)
-        return songs
-    except Exception as e:
-        _logger_provider_error(e, 'LastFM')
+    """Fetch metadata from LastFM."""
+    return lastfm.searchSong(SONG_NAME)
 
 
+@provider_error_handler("Saavn")
 def get_from_saavn(SONG_NAME):
-    """
-    Get the songs from JioSaavn
-    """
-    try:
-        results = saavn.search_query(SONG_NAME)
-        return results
-    except Exception as e:
-        _logger_provider_error(e, "Saavn")
-        return None
+    """Fetch metadata from JioSaavn."""
+    return saavn.search_query(SONG_NAME)
 
 
+@provider_error_handler("MusicBrainz")
 def get_from_musicbrainz(SONG_NAME):
-    """Get the songs from musicbrainz"""
-    try:
-        results = musicbrainz.search_song(SONG_NAME)
-        return results
-    except Exception as e:
-        _logger_provider_error(e, "MusicBrainz")
-        return None
+    """Fetch metadata from MusicBrainz."""
+    return musicbrainz.search_song(SONG_NAME)
 
 
+@provider_error_handler("Spotify")
 def get_from_spotify(SONG_NAME):
-    """
-    Get the songs from Spotify
-    """
-    try:
-        country = defaults.DEFAULT.SPOTIFY_COUNTRY
-        logger.debug(f"Using {country} for Spotify country")
+    """Fetch metadata from Spotify."""
+    country = defaults.DEFAULT.SPOTIFY_COUNTRY
+    logger.debug(f"Using {country} for Spotify country")
+    return spotify.search_song(SONG_NAME, country=country)
 
-        return spotify.search_song(SONG_NAME, country=country)
-    except Exception as e:
-        _logger_provider_error(e, "Spotify")
-        return None
 
 
 def lookup_from_itunes(ID):

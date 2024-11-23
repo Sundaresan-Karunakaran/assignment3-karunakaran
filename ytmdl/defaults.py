@@ -30,7 +30,7 @@ class DEFAULT:
     HOME_DIR = os.path.expanduser('~')
 
     # The directory where songs will be saved
-    SONG_DIR = __parse_dir_path(setupConfig.GIVE_DEFAULT(1, 'SONG_DIR'))
+    SONG_DIR = __parse_dir_path(setupConfig.get_config_value(1, 'SONG_DIR'))
 
     # The temp directory where songs will be modded
     SONG_TEMP_DIR = os.path.join(xdg_cache_home, 'ytmdl')
@@ -39,19 +39,19 @@ class DEFAULT:
     COVER_IMG = os.path.join(SONG_TEMP_DIR, 'cover.jpg')
 
     # The song quality
-    SONG_QUALITY = setupConfig.GIVE_DEFAULT(1, 'QUALITY')
+    SONG_QUALITY = setupConfig.get_config_value(1, 'QUALITY')
 
-    DEFAULT_FORMAT = setupConfig.GIVE_DEFAULT(1, 'DEFAULT_FORMAT')
+    DEFAULT_FORMAT = setupConfig.get_config_value(1, 'DEFAULT_FORMAT')
 
     # The metadata providers
     METADATA_PROVIDERS = _providers_string_to_list(
-        setupConfig.GIVE_DEFAULT(1, 'METADATA_PROVIDERS'))
+        setupConfig.get_config_value(1, 'METADATA_PROVIDERS'))
 
     VALID_FORMATS = setupConfig.DEFAULTS().VALID_FORMATS
 
     ON_ERROR_OPTIONS = setupConfig.DEFAULTS().ON_ERROR_OPTIONS
-    ON_ERROR_DEFAULT = setupConfig.GIVE_DEFAULT(1, 'ON_META_ERROR')
+    ON_ERROR_DEFAULT = setupConfig.get_config_value(1, 'ON_META_ERROR')
 
-    ITUNES_COUNTRY = setupConfig.GIVE_DEFAULT(1, 'ITUNES_COUNTRY')
+    ITUNES_COUNTRY = setupConfig.get_config_value(1, 'ITUNES_COUNTRY')
 
-    SPOTIFY_COUNTRY = setupConfig.GIVE_DEFAULT(1, 'SPOTIFY_COUNTRY')
+    SPOTIFY_COUNTRY = setupConfig.get_config_value(1, 'SPOTIFY_COUNTRY')

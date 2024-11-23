@@ -5,3 +5,4 @@ dist/
 ytmdl.*
 ytmdl/__pycache__/*
 .cache
+env/
